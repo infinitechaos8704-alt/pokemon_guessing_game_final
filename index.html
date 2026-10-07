@@ -1,0 +1,4188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon Guessing Game</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+        radial-gradient(circle at top left, #18213b 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #25183b 0%, transparent 35%),
+        #080b13;
+    color: #f4f6fb;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 350px;
+    flex-shrink: 0;
+    padding: 24px;
+    background: rgba(11, 15, 25, 0.96);
+    border-right: 1px solid rgba(255,255,255,.08);
+    overflow-y: auto;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #8d96aa;
+    font-size: 13px;
+    margin-bottom: 22px;
+}
+
+.section-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #7e89a2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 10px;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.mode-button {
+    border: 1px solid #252d40;
+    background: #121827;
+    color: #aab2c4;
+    border-radius: 10px;
+    padding: 11px 8px;
+    font-weight: 700;
+}
+
+.mode-button.active {
+    background: #5965ff;
+    border-color: #5965ff;
+    color: white;
+}
+
+.field {
+    margin-bottom: 9px;
+}
+
+.field label {
+    display: block;
+    color: #a7afc0;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #283145;
+    background: #111725;
+    color: #f3f5fa;
+    border-radius: 8px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #5965ff;
+}
+
+.two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.pool-count {
+    margin-top: 18px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #0e1420;
+    border: 1px solid #252d40;
+    color: #aeb7ca;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.progress-bar {
+    height: 7px;
+    margin-top: 8px;
+    background: #20283a;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #5965ff, #9b6cff);
+    transition: width .15s ease;
+}
+
+.main {
+    flex: 1;
+    padding: 32px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 24px;
+}
+
+.game-title {
+    font-size: 28px;
+    font-weight: 850;
+}
+
+.game-subtitle {
+    color: #8791a7;
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(80px, 1fr));
+    gap: 9px;
+    margin-bottom: 22px;
+}
+
+.stat {
+    background: rgba(15, 20, 32, .8);
+    border: 1px solid #252d40;
+    border-radius: 11px;
+    padding: 12px;
+}
+
+.stat-label {
+    color: #7f899f;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+.stat-value {
+    font-size: 21px;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+.game-card {
+    min-height: 610px;
+    background: rgba(13, 18, 29, .82);
+    border: 1px solid #252d40;
+    border-radius: 18px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.status {
+    min-height: 28px;
+    text-align: center;
+    font-weight: 700;
+    color: #aab3c6;
+    margin-bottom: 12px;
+}
+
+.clues {
+    width: min(850px, 100%);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.clue {
+    background: #111827;
+    border: 1px solid #283145;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.clue-name {
+    color: #7f899f;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+.clue-value {
+    font-size: 14px;
+    font-weight: 750;
+    margin-top: 3px;
+}
+
+.pokemon-image {
+    width: 330px;
+    height: 330px;
+    object-fit: contain;
+}
+
+.image-placeholder {
+    width: 330px;
+    height: 330px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b455c;
+    font-size: 80px;
+    font-weight: 900;
+}
+
+.answer {
+    margin: 8px 0 14px;
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.hint {
+    min-height: 36px;
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: 5px;
+    color: #bbc3d4;
+    margin: 5px 0 12px;
+}
+
+.controls {
+    width: min(700px, 100%);
+    display: flex;
+    gap: 9px;
+}
+
+.guess-input {
+    flex: 1;
+}
+
+.action {
+    border: 0;
+    border-radius: 9px;
+    padding: 10px 15px;
+    background: #5965ff;
+    color: white;
+    font-weight: 800;
+}
+
+.action.secondary {
+    background: #1a2233;
+    border: 1px solid #2b354a;
+}
+
+.action.danger {
+    background: #8e3345;
+}
+
+.action:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.options {
+    width: min(700px, 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    color: #8b95a9;
+    font-size: 12px;
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.toggle input {
+    width: auto;
+}
+
+ 
+.hidden {
+    display: none !important;
+}
+
+.mode-grid.three {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.test-panel {
+    width: min(700px, 100%);
+    background: #111827;
+    border: 1px solid #283145;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+.test-panel h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+}
+
+.test-progress {
+    color: #8f99ad;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.test-result {
+    width: min(850px, 100%);
+    text-align: left;
+    background: #111827;
+    border: 1px solid #283145;
+    border-radius: 12px;
+    padding: 18px;
+    line-height: 1.7;
+}
+
+.sidebar.learn-active > * {
+    display: none !important;
+}
+
+.sidebar.learn-active > .logo,
+.sidebar.learn-active > .subtitle,
+.sidebar.learn-active > .mode-grid,
+.sidebar.learn-active > #learnGenerationSection,
+.sidebar.learn-active > #testSection,
+.sidebar.learn-active > #learnPoolCount {
+    display: block !important;
+}
+
+.sidebar.learn-active > .mode-grid {
+    display: grid !important;
+}
+
+.learn-note {
+    color: #8f99ad;
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: center;
+}
+
+@media(max-width: 750px) {
+    .mode-grid.three {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.clue-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.clue-setting {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 7px;
+    border: 1px solid #252d40;
+    background: #111725;
+    border-radius: 7px;
+    color: #aeb7ca;
+    font-size: 11px;
+}
+
+.clue-setting input {
+    width: auto;
+    margin: 0;
+}
+
+.clue-setting-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.clue-setting-actions button {
+    flex: 1;
+    border: 1px solid #283145;
+    background: #111725;
+    color: #aeb7ca;
+    border-radius: 7px;
+    padding: 6px;
+    font-size: 11px;
+}
+
+.clue-setting-actions button:hover,
+.clue-setting:hover {
+    border-color: #5965ff;
+}
+
+.clue-setting input:checked + span {
+    color: #f4f6fb;
+}
+
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: #080b13;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-box {
+    width: min(650px, 90vw);
+    background: #101624;
+    border: 1px solid #2a3449;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 30px 100px rgba(0,0,0,.45);
+}
+
+.loading-title {
+    font-size: 25px;
+    font-weight: 850;
+}
+
+.loading-stage {
+    color: #929db2;
+    margin-top: 7px;
+    min-height: 20px;
+}
+
+.big-progress {
+    height: 12px;
+    background: #20283a;
+    border-radius: 30px;
+    overflow: hidden;
+    margin-top: 25px;
+}
+
+.big-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #5965ff, #a36cff);
+    transition: width .15s ease;
+}
+
+.loading-percent {
+    text-align: right;
+    margin-top: 7px;
+    color: #8993a8;
+    font-size: 12px;
+}
+
+.loading-count {
+    color: #69758d;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+@media(max-width: 1000px) {
+
+    .sidebar {
+        width: 290px;
+    }
+
+    .stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media(max-width: 750px) {
+
+    .app {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: 0;
+        border-bottom: 1px solid #222b3d;
+    }
+
+    .main {
+        padding: 18px;
+    }
+
+    .clues {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="loadingScreen" class="loading-screen">
+
+    <div class="loading-box">
+
+        <div class="loading-title">
+            Loading Pokémon Database
+        </div>
+
+        <div id="loadingStage" class="loading-stage">
+            Connecting to PokéAPI...
+        </div>
+
+        <div id="loadingCount" class="loading-count">
+            Starting...
+        </div>
+
+        <div class="big-progress">
+            <div id="bigProgress"
+                 class="big-progress-fill">
+            </div>
+        </div>
+
+        <div id="loadingPercent"
+             class="loading-percent">
+            0%
+        </div>
+
+    </div>
+
+</div>
+
+<div class="app">
+
+<aside class="sidebar">
+
+    <div class="logo">
+        Pokémon Guessing Game
+    </div>
+
+    <div class="subtitle">
+        Choose your rules and start guessing.
+    </div>
+
+    <div class="section-title">
+        Game Mode
+    </div>
+
+    <div class="mode-grid three">
+
+        <button id="cluesMode"
+                class="mode-button active">
+            Clues
+        </button>
+
+        <button id="imageMode"
+                class="mode-button">
+            Image
+        </button>
+
+        <button id="learnMode"
+                class="mode-button">
+            Learn
+        </button>
+
+    </div>
+
+    <div id="learnGenerationSection" class="hidden">
+        <div class="section-title">
+            Learn Generation
+        </div>
+
+        <div class="field">
+            <select id="learnGeneration">
+                <option value="all">All Generations</option>
+                <option value="1">Generation 1</option>
+                <option value="2">Generation 2</option>
+                <option value="3">Generation 3</option>
+                <option value="4">Generation 4</option>
+                <option value="5">Generation 5</option>
+                <option value="6">Generation 6</option>
+                <option value="7">Generation 7</option>
+                <option value="8">Generation 8</option>
+                <option value="9">Generation 9</option>
+            </select>
+        </div>
+
+        <div class="learn-note">
+            Learn mode uses only default forms. Pokémon you miss are weighted higher.
+        </div>
+    </div>
+
+    <div id="testSection">
+    <div class="section-title">
+        Test
+    </div>
+
+    <div class="field">
+        <select id="testGeneration">
+            <option value="1">Generation 1</option>
+            <option value="2">Generation 2</option>
+            <option value="3">Generation 3</option>
+            <option value="4">Generation 4</option>
+            <option value="5">Generation 5</option>
+            <option value="6">Generation 6</option>
+            <option value="7">Generation 7</option>
+            <option value="8">Generation 8</option>
+            <option value="9">Generation 9</option>
+        </select>
+    </div>
+
+    <button id="startTestButton" class="action secondary" style="width:100%;">
+        Start Test
+    </button>
+    </div>
+
+    <div class="section-title">
+        Basic Filters
+    </div>
+
+    <div class="field">
+
+        <label>Generation</label>
+
+        <select id="generation">
+
+            <option value="all">
+                All Generations
+            </option>
+
+            <option value="1">
+                Generation 1
+            </option>
+
+            <option value="2">
+                Generation 2
+            </option>
+
+            <option value="3">
+                Generation 3
+            </option>
+
+            <option value="4">
+                Generation 4
+            </option>
+
+            <option value="5">
+                Generation 5
+            </option>
+
+            <option value="6">
+                Generation 6
+            </option>
+
+            <option value="7">
+                Generation 7
+            </option>
+
+            <option value="8">
+                Generation 8
+            </option>
+
+            <option value="9">
+                Generation 9
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Type 1</label>
+
+            <select id="type1">
+
+                <option value="all">
+                    Any
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="field">
+
+            <label>Type 2</label>
+
+            <select id="type2">
+
+                <option value="all">
+                    Any
+                </option>
+
+                <option value="none">
+                    None
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <div class="field">
+
+        <label>Typing</label>
+
+        <select id="typing">
+
+            <option value="all">
+                Any
+            </option>
+
+            <option value="mono">
+                Monotype
+            </option>
+
+            <option value="dual">
+                Dual Type
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Form Type</label>
+
+        <select id="formType">
+
+            <option value="all">
+                All Forms
+            </option>
+
+            <option value="default">
+                Default
+            </option>
+
+            <option value="alternate">
+                Alternate
+            </option>
+
+            <option value="regional">
+                Regional
+            </option>
+
+            <option value="mega">
+                Mega
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Rarity</label>
+
+        <select id="rarity">
+
+            <option value="all">
+                Any
+            </option>
+
+            <option value="normal">
+                Normal
+            </option>
+
+            <option value="legendary">
+                Legendary
+            </option>
+
+            <option value="mythical">
+                Mythical
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="section-title">
+        Evolution
+    </div>
+
+    <div class="field">
+
+        <select id="evolution">
+
+            <option value="all">
+                Any Evolution Status
+            </option>
+
+            <option value="baby">
+                Baby
+            </option>
+
+            <option value="hasEvolution">
+                Has Evolution
+            </option>
+
+            <option value="middle">
+                Middle Evolution
+            </option>
+
+            <option value="final">
+                Final Evolution
+            </option>
+
+            <option value="none">
+                No Evolution
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="section-title">
+        National Dex
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Minimum</label>
+
+            <input id="dexMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Maximum</label>
+
+            <input id="dexMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="section-title">
+        Base Stats
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>BST Min</label>
+
+            <input id="bstMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>BST Max</label>
+
+            <input id="bstMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>HP Min</label>
+
+            <input id="hpMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>HP Max</label>
+
+            <input id="hpMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Attack Min</label>
+
+            <input id="attackMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Attack Max</label>
+
+            <input id="attackMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Defense Min</label>
+
+            <input id="defenseMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Defense Max</label>
+
+            <input id="defenseMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Sp. Attack Min</label>
+
+            <input id="spAttackMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Sp. Attack Max</label>
+
+            <input id="spAttackMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Sp. Defense Min</label>
+
+            <input id="spDefenseMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Sp. Defense Max</label>
+
+            <input id="spDefenseMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Speed Min</label>
+
+            <input id="speedMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Speed Max</label>
+
+            <input id="speedMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="section-title">
+        Physical
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Height Min</label>
+
+            <input id="heightMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Height Max</label>
+
+            <input id="heightMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="two">
+
+        <div class="field">
+
+            <label>Weight Min</label>
+
+            <input id="weightMin"
+                   type="number">
+
+        </div>
+
+        <div class="field">
+
+            <label>Weight Max</label>
+
+            <input id="weightMax"
+                   type="number">
+
+        </div>
+
+    </div>
+
+    <div class="section-title">
+        Species Information
+    </div>
+
+    <div class="field">
+
+        <label>Color</label>
+
+        <select id="color">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Habitat</label>
+
+        <select id="habitat">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Growth Rate</label>
+
+        <select id="growthRate">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Egg Group</label>
+
+        <select id="eggGroup">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Ability</label>
+
+        <select id="ability">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="field">
+
+        <label>Hidden Ability</label>
+
+        <select id="hiddenAbility">
+
+            <option value="all">
+                Any
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="section-title">
+        Guessing Game Clues
+    </div>
+
+    <div class="clue-settings">
+
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="dex" checked><span>National Dex</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="generation" checked><span>Generation</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="type1" checked><span>Type 1</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="type2" checked><span>Type 2</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="typing" checked><span>Typing</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="bst" checked><span>BST</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="hp" checked><span>HP</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="attack" checked><span>Attack</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="defense" checked><span>Defense</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="spAttack" checked><span>Sp. Attack</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="spDefense" checked><span>Sp. Defense</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="speed" checked><span>Speed</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="height" checked><span>Height</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="weight" checked><span>Weight</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="color" checked><span>Color</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="habitat" checked><span>Habitat</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="growthRate" checked><span>Growth Rate</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="rarity" checked><span>Rarity</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="form" checked><span>Form</span></label>
+        <label class="clue-setting"><input type="checkbox" class="clue-toggle" value="eggGroups" checked><span>Egg Groups</span></label>
+
+    </div>
+
+    <div class="clue-setting-actions">
+        <button id="enableAllClues" type="button">Enable All</button>
+        <button id="disableAllClues" type="button">Disable All</button>
+    </div>
+
+    <div id="learnPoolCount" class="pool-count">
+
+        <div id="poolText">
+            Loading Pokémon...
+        </div>
+
+        <div class="progress-bar">
+
+            <div id="sidebarProgress"
+                 class="progress-fill">
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+<main class="main">
+
+    <div class="topbar">
+
+        <div>
+
+            <div class="game-title">
+                Who's That Pokémon?
+            </div>
+
+            <div id="gameSubtitle"
+                 class="game-subtitle">
+                Identify the Pokémon from the clues.
+            </div>
+
+        </div>
+
+        <button id="resetFilters"
+                class="action secondary">
+            Reset Filters
+        </button>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Correct
+            </div>
+
+            <div id="statCorrect"
+                 class="stat-value">
+                0
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Incorrect
+            </div>
+
+            <div id="statIncorrect"
+                 class="stat-value">
+                0
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Accuracy
+            </div>
+
+            <div id="statAccuracy"
+                 class="stat-value">
+                0%
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Streak
+            </div>
+
+            <div id="statStreak"
+                 class="stat-value">
+                0
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Best
+            </div>
+
+            <div id="statBest"
+                 class="stat-value">
+                0
+            </div>
+
+        </div>
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Hints
+            </div>
+
+            <div id="statHints"
+                 class="stat-value">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="game-card">
+
+        <div id="testPanel" class="test-panel hidden">
+            <h3 id="testTitle">Generation Test</h3>
+            <div id="testProgress" class="test-progress"></div>
+        </div>
+
+        <div id="testResult" class="test-result hidden"></div>
+
+        <div id="status"
+             class="status">
+            Loading Pokémon...
+        </div>
+
+        <div id="clues"
+             class="clues">
+        </div>
+
+        <div id="visual">
+        </div>
+
+        <div id="answer"
+             class="answer hidden">
+        </div>
+
+        <div id="hint"
+             class="hint">
+        </div>
+
+        <div class="controls">
+
+            <input id="guessInput"
+                   class="guess-input"
+                   type="text"
+                   placeholder="Enter Pokémon name..."
+                   autocomplete="off"
+                   disabled>
+
+            <button id="guessButton"
+                    class="action"
+                    disabled>
+                Guess
+            </button>
+
+        </div>
+
+        <div class="options">
+
+            <div class="toggle">
+
+                <input id="autoNext"
+                       type="checkbox"
+                       checked>
+
+                <label for="autoNext">
+                    Auto-next after 1 second
+                </label>
+
+            </div>
+
+            <div id="roundText">
+                Round 0
+            </div>
+
+        </div>
+
+        <div style="display:flex;gap:9px;margin-top:15px;">
+
+            <button id="hintButton"
+                    class="action secondary"
+                    disabled>
+                Hint
+            </button>
+
+            <button id="giveUpButton"
+                    class="action danger"
+                    disabled>
+                Give Up
+            </button>
+
+            <button id="nextButton"
+                    class="action secondary"
+                    disabled>
+                New Pokémon
+            </button>
+
+        </div>
+
+    </div>
+
+</main>
+
+</div>
+
+<script>
+
+const API =
+    "https://pokeapi.co/api/v2";
+
+const CACHE_KEY =
+    "pokemon_guessing_database_v5";
+
+const CACHE_VERSION =
+    "5";
+
+let database = [];
+let pool = [];
+let target = null;
+let solved = false;
+let loading = true;
+let revealed = new Set();
+
+let currentMode = "clues";
+let learnWeights = {};
+let testState = null;
+
+const WEIGHTS_KEY = "pokemon_guessing_learn_weights_v1";
+
+let stats = {
+    correct: 0,
+    incorrect: 0,
+    guesses: 0,
+    hints: 0,
+    streak: 0,
+    bestStreak: 0,
+    rounds: 0
+};
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function sleep(ms) {
+    return new Promise(
+        resolve => setTimeout(resolve, ms)
+    );
+}
+
+async function fetchJSON(
+    url,
+    retries = 3
+) {
+
+    for(
+        let attempt = 0;
+        attempt <= retries;
+        attempt++
+    ) {
+
+        try {
+
+            const response =
+                await fetch(url);
+
+            if(!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+            }
+
+            return await response.json();
+
+        } catch(error) {
+
+            if(
+                attempt >= retries
+            ) {
+
+                throw error;
+            }
+
+            await sleep(
+                300 * (attempt + 1)
+            );
+        }
+    }
+}
+
+function updateLoading(
+    percent,
+    stage,
+    count = ""
+) {
+
+    percent =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                percent
+            )
+        );
+
+    $("bigProgress").style.width =
+        percent + "%";
+
+    $("sidebarProgress").style.width =
+        percent + "%";
+
+    $("loadingPercent").textContent =
+        Math.round(percent) + "%";
+
+    $("loadingStage").textContent =
+        stage;
+
+    $("loadingCount").textContent =
+        count;
+
+    $("poolText").innerHTML =
+        `<b>Loading Pokémon...</b><br>${stage}`;
+}
+
+async function concurrentMap(
+    items,
+    concurrency,
+    callback,
+    progress
+) {
+
+    const results =
+        new Array(items.length);
+
+    let nextIndex = 0;
+    let completed = 0;
+
+    async function worker() {
+
+        while(true) {
+
+            const index =
+                nextIndex++;
+
+            if(
+                index >= items.length
+            )
+                return;
+
+            try {
+
+                results[index] =
+                    await callback(
+                        items[index],
+                        index
+                    );
+
+            } catch(error) {
+
+                console.warn(
+                    "Failed request:",
+                    items[index],
+                    error
+                );
+
+                results[index] = null;
+            }
+
+            completed++;
+
+            if(progress) {
+
+                progress(
+                    completed,
+                    items.length
+                );
+            }
+        }
+    }
+
+    const workers = [];
+
+    for(
+        let i = 0;
+        i <
+        Math.min(
+            concurrency,
+            items.length
+        );
+        i++
+    ) {
+
+        workers.push(
+            worker()
+        );
+    }
+
+    await Promise.all(
+        workers
+    );
+
+    return results;
+}
+
+function prettify(value) {
+
+    if(
+        value === null ||
+        value === undefined ||
+        value === ""
+    )
+        return "Unknown";
+
+    return String(value)
+        .replace(/-/g, " ")
+        .replace(
+            /\b\w/g,
+            c => c.toUpperCase()
+        );
+}
+
+function normalizeName(name) {
+
+    return name
+        .toLowerCase()
+        .replace(
+            /[♀♂]/g,
+            ""
+        )
+        .replace(
+            /[-_.]/g,
+            ""
+        )
+        .replace(
+            /\s+/g,
+            ""
+        );
+}
+
+function generationNumber(name) {
+
+    const generations = {
+
+        "generation-i": 1,
+        "generation-ii": 2,
+        "generation-iii": 3,
+        "generation-iv": 4,
+        "generation-v": 5,
+        "generation-vi": 6,
+        "generation-vii": 7,
+        "generation-viii": 8,
+        "generation-ix": 9
+
+    };
+
+    return generations[name] || 0;
+}
+
+function isGigantamax(pokemon) {
+
+    const name =
+        (
+            pokemon.name || ""
+        ).toLowerCase();
+
+    if(
+        name.includes("-gmax")
+    )
+        return true;
+
+    const forms =
+        pokemon.forms || [];
+
+    for(
+        const form of forms
+    ) {
+
+        const formName =
+            (
+                form.form_name || ""
+            ).toLowerCase();
+
+        if(
+            formName.includes("gmax")
+        )
+            return true;
+    }
+
+    return false;
+}
+
+function getRegionalName(name) {
+
+    const lower =
+        (
+            name || ""
+        ).toLowerCase();
+
+    if(
+        lower.includes("-alola")
+    )
+        return "Alolan";
+
+    if(
+        lower.includes("-galar")
+    )
+        return "Galarian";
+
+    if(
+        lower.includes("-hisui")
+    )
+        return "Hisuian";
+
+    if(
+        lower.includes("-paldea")
+    )
+        return "Paldean";
+
+    return null;
+}
+
+function getFormType(
+    pokemon,
+    form
+) {
+
+    if(
+        pokemon.is_default
+    )
+        return "default";
+
+    if(
+        form &&
+        form.is_mega
+    )
+        return "mega";
+
+    if(
+        getRegionalName(
+            pokemon.name
+        )
+    )
+        return "regional";
+
+    return "alternate";
+}
+
+function getStat(
+    stats,
+    statName
+) {
+
+    if(
+        !Array.isArray(stats)
+    )
+        return 0;
+
+    const stat =
+        stats.find(
+            item =>
+                item &&
+                item.stat &&
+                item.stat.name ===
+                statName
+        );
+
+    return stat
+        ? stat.base_stat || 0
+        : 0;
+}
+
+/*
+    This is the important evolution fix.
+
+    PokéAPI's evolution endpoint returns:
+
+    {
+        chain: {
+            species: {...},
+            evolves_to: [...]
+        }
+    }
+
+    We now explicitly start at chain.chain
+    and verify every node before accessing species.
+*/
+
+function getEvolutionInfo(
+    evolutionData,
+    speciesName
+) {
+
+    const emptyResult = {
+
+        depth: 0,
+        maxDepth: 0,
+
+        baby: false,
+        hasEvolution: false,
+        middle: false,
+        final: false,
+        noEvolution: true
+
+    };
+
+    if(
+        !evolutionData ||
+        !evolutionData.chain
+    )
+        return emptyResult;
+
+    const nodes = [];
+
+    function walk(
+        node,
+        depth
+    ) {
+
+        if(
+            !node ||
+            !node.species ||
+            !node.species.name
+        )
+            return;
+
+        nodes.push({
+
+            name:
+                node.species.name,
+
+            depth:
+                depth
+
+        });
+
+        if(
+            !Array.isArray(
+                node.evolves_to
+            )
+        )
+            return;
+
+        for(
+            const child
+            of node.evolves_to
+        ) {
+
+            walk(
+                child,
+                depth + 1
+            );
+        }
+    }
+
+    walk(
+        evolutionData.chain,
+        0
+    );
+
+    if(
+        nodes.length === 0
+    )
+        return emptyResult;
+
+    const current =
+        nodes.find(
+            node =>
+                node.name ===
+                speciesName
+        );
+
+    if(!current)
+        return emptyResult;
+
+    const maxDepth =
+        Math.max(
+            ...nodes.map(
+                node =>
+                    node.depth
+            )
+        );
+
+    return {
+
+        depth:
+            current.depth,
+
+        maxDepth:
+            maxDepth,
+
+        baby:
+            current.depth === 0 &&
+            maxDepth > 0,
+
+        hasEvolution:
+            current.depth <
+            maxDepth,
+
+        middle:
+            current.depth > 0 &&
+            current.depth <
+            maxDepth,
+
+        final:
+            current.depth ===
+            maxDepth &&
+            maxDepth > 0,
+
+        noEvolution:
+            maxDepth === 0
+
+    };
+}
+
+function buildRecord(
+    pokemon,
+    species,
+    evolutionData
+) {
+
+    if(
+        !pokemon ||
+        !species
+    )
+        return null;
+
+    const stats =
+        pokemon.stats || [];
+
+    const hp =
+        getStat(
+            stats,
+            "hp"
+        );
+
+    const attack =
+        getStat(
+            stats,
+            "attack"
+        );
+
+    const defense =
+        getStat(
+            stats,
+            "defense"
+        );
+
+    const spAttack =
+        getStat(
+            stats,
+            "special-attack"
+        );
+
+    const spDefense =
+        getStat(
+            stats,
+            "special-defense"
+        );
+
+    const speed =
+        getStat(
+            stats,
+            "speed"
+        );
+
+    const types =
+        (pokemon.types || [])
+            .slice()
+            .sort(
+                (a,b) =>
+                    (
+                        a.slot || 0
+                    ) -
+                    (
+                        b.slot || 0
+                    )
+            )
+            .map(
+                x =>
+                    prettify(
+                        x?.type?.name
+                    )
+            );
+
+    const abilities = [];
+    const hiddenAbilities = [];
+
+    for(
+        const abilityData
+        of pokemon.abilities || []
+    ) {
+
+        if(
+            !abilityData ||
+            !abilityData.ability ||
+            !abilityData.ability.name
+        )
+            continue;
+
+        const name =
+            prettify(
+                abilityData.ability.name
+            );
+
+        if(
+            abilityData.is_hidden
+        )
+            hiddenAbilities.push(name);
+
+        else
+            abilities.push(name);
+    }
+
+    const form =
+        pokemon.forms &&
+        pokemon.forms.length
+            ? pokemon.forms[0]
+            : null;
+
+    const formType =
+        getFormType(
+            pokemon,
+            form
+        );
+
+    let rarity = "normal";
+
+    if(
+        species.is_legendary
+    )
+        rarity = "legendary";
+
+    else if(
+        species.is_mythical
+    )
+        rarity = "mythical";
+
+    let displayName =
+        pokemon.name || species.name;
+
+    if(
+        form &&
+        form.form_name &&
+        !pokemon.is_default
+    ) {
+
+        const formName =
+            prettify(
+                form.form_name
+            );
+
+        if(
+            formName &&
+            !displayName
+                .toLowerCase()
+                .includes(
+                    formName.toLowerCase()
+                )
+        ) {
+
+            displayName +=
+                " " + formName;
+        }
+    }
+
+    const evolution =
+        getEvolutionInfo(
+            evolutionData,
+            species.name
+        );
+
+    return {
+
+        id:
+            species.id,
+
+        pokemonId:
+            pokemon.id,
+
+        apiName:
+            pokemon.name,
+
+        speciesName:
+            species.name,
+
+        displayName:
+            prettify(displayName),
+
+        generation:
+            generationNumber(
+                species
+                    .generation
+                    ?.name
+            ),
+
+        types:
+
+            types,
+
+        type1:
+            types[0] || "",
+
+        type2:
+            types[1] || null,
+
+        hp,
+        attack,
+        defense,
+        spAttack,
+        spDefense,
+        speed,
+
+        bst:
+            hp +
+            attack +
+            defense +
+            spAttack +
+            spDefense +
+            speed,
+
+        height:
+            pokemon.height || 0,
+
+        weight:
+            pokemon.weight || 0,
+
+        color:
+            prettify(
+                species.color?.name
+            ),
+
+        habitat:
+            prettify(
+                species.habitat?.name
+            ),
+
+        growthRate:
+            prettify(
+                species
+                    .growth_rate
+                    ?.name
+            ),
+
+        eggGroups:
+            (
+                species.egg_groups ||
+                []
+            )
+            .map(
+                x =>
+                    prettify(
+                        x?.name
+                    )
+            ),
+
+        abilities,
+
+        hiddenAbilities,
+
+        isLegendary:
+            !!species.is_legendary,
+
+        isMythical:
+            !!species.is_mythical,
+
+        isDefault:
+            !!pokemon.is_default,
+
+        isMega:
+            !!form?.is_mega,
+
+        isBattleOnly:
+            !!form?.is_battle_only,
+
+        formName:
+            form?.form_name || "",
+
+        formType,
+
+        rarity,
+
+        evolution,
+
+        image:
+            pokemon
+                .sprites
+                ?.other
+                ?.["official-artwork"]
+                ?.front_default ||
+
+            pokemon
+                .sprites
+                ?.front_default ||
+
+            ""
+
+    };
+}
+
+async function loadDatabase() {
+
+    loading = true;
+
+    updateLoading(
+        1,
+        "Connecting to PokéAPI...",
+        "Getting Pokémon list"
+    );
+
+    const list =
+        await fetchJSON(
+            `${API}/pokemon?limit=2000&offset=0`
+        );
+
+    const entries =
+        (list.results || [])
+            .filter(
+                entry =>
+                    entry &&
+                    entry.name &&
+                    !entry.name
+                        .toLowerCase()
+                        .includes("-gmax")
+            );
+
+    updateLoading(
+        5,
+        "Pokémon list downloaded.",
+        `${entries.length.toLocaleString()} Pokémon varieties found`
+    );
+
+    const pokemonResults =
+        await concurrentMap(
+            entries,
+            75,
+
+            async entry => {
+
+                const pokemon =
+                    await fetchJSON(
+                        entry.url
+                    );
+
+                if(
+                    isGigantamax(
+                        pokemon
+                    )
+                )
+                    return null;
+
+                return pokemon;
+            },
+
+            (done,total) => {
+
+                const percent =
+                    5 +
+                    (
+                        done / total
+                    ) * 45;
+
+                updateLoading(
+                    percent,
+                    "Downloading Pokémon data...",
+                    `${done.toLocaleString()} / ${total.toLocaleString()} Pokémon`
+                );
+            }
+        );
+
+    const validPokemon =
+        pokemonResults.filter(
+            pokemon =>
+                pokemon !== null
+        );
+
+    updateLoading(
+        50,
+        "Pokémon data complete.",
+        `${validPokemon.length.toLocaleString()} Pokémon loaded`
+    );
+
+    const speciesUrls =
+        [
+            ...new Set(
+                validPokemon
+                    .map(
+                        pokemon =>
+                            pokemon
+                                .species
+                                ?.url
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+    const speciesResults =
+        await concurrentMap(
+            speciesUrls,
+            75,
+
+            async url =>
+                await fetchJSON(url),
+
+            (done,total) => {
+
+                const percent =
+                    50 +
+                    (
+                        done / total
+                    ) * 28;
+
+                updateLoading(
+                    percent,
+                    "Downloading species data...",
+                    `${done.toLocaleString()} / ${total.toLocaleString()} species`
+                );
+            }
+        );
+
+    const speciesMap =
+        new Map();
+
+    for(
+        const species
+        of speciesResults
+    ) {
+
+        if(
+            species &&
+            species.name
+        ) {
+
+            speciesMap.set(
+                species.name,
+                species
+            );
+        }
+    }
+
+    updateLoading(
+        78,
+        "Species data complete.",
+        `${speciesMap.size.toLocaleString()} species loaded`
+    );
+
+    const evolutionUrls =
+        [
+            ...new Set(
+                [
+                    ...speciesMap.values()
+                ]
+                .map(
+                    species =>
+                        species
+                            .evolution_chain
+                            ?.url
+                )
+                .filter(Boolean)
+            )
+        ];
+
+    const evolutionResults =
+        await concurrentMap(
+            evolutionUrls,
+            75,
+
+            async url =>
+                await fetchJSON(url),
+
+            (done,total) => {
+
+                const percent =
+                    78 +
+                    (
+                        done / total
+                    ) * 17;
+
+                updateLoading(
+                    percent,
+                    "Downloading evolution data...",
+                    `${done.toLocaleString()} / ${total.toLocaleString()} evolution chains`
+                );
+            }
+        );
+
+    const evolutionMap =
+        new Map();
+
+    for(
+        let i = 0;
+        i < evolutionUrls.length;
+        i++
+    ) {
+
+        const data =
+            evolutionResults[i];
+
+        if(data) {
+
+            evolutionMap.set(
+                evolutionUrls[i],
+                data
+            );
+        }
+    }
+
+    updateLoading(
+        95,
+        "Building Pokémon database...",
+        "Combining Pokémon, forms, species and evolution data"
+    );
+
+    const records = [];
+
+    for(
+        const pokemon
+        of validPokemon
+    ) {
+
+        if(
+            !pokemon ||
+            !pokemon.species ||
+            !pokemon.species.name
+        )
+            continue;
+
+        const species =
+            speciesMap.get(
+                pokemon.species.name
+            );
+
+        if(!species)
+            continue;
+
+        const evolutionData =
+            species
+                .evolution_chain
+                ?.url
+                ? evolutionMap.get(
+                    species
+                        .evolution_chain
+                        .url
+                )
+                : null;
+
+        const record =
+            buildRecord(
+                pokemon,
+                species,
+                evolutionData
+            );
+
+        if(!record)
+            continue;
+
+        if(
+            record.apiName
+                .toLowerCase()
+                .includes("-gmax")
+        )
+            continue;
+
+        records.push(record);
+    }
+
+    const unique =
+        new Map();
+
+    for(
+        const record
+        of records
+    ) {
+
+        unique.set(
+            record.apiName,
+            record
+        );
+    }
+
+    database =
+        [...unique.values()];
+
+    if(
+        database.length === 0
+    ) {
+
+        throw new Error(
+            "PokéAPI returned no usable Pokémon data."
+        );
+    }
+
+    updateLoading(
+        98,
+        "Saving local database...",
+        `${database.length.toLocaleString()} Pokémon ready`
+    );
+
+    try {
+
+        localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+
+                version:
+                    CACHE_VERSION,
+
+                database:
+                    database
+
+            })
+        );
+
+    } catch(error) {
+
+        console.warn(
+            "Could not save database cache:",
+            error
+        );
+    }
+
+    updateLoading(
+        100,
+        "Finished!",
+        `${database.length.toLocaleString()} Pokémon loaded`
+    );
+
+    await sleep(400);
+
+    $("loadingScreen")
+        .classList
+        .add("hidden");
+
+    loading = false;
+
+    initializeFilters();
+
+    updatePool();
+
+    startRound();
+}
+
+async function initializeDatabase() {
+
+    try {
+
+        const cached =
+            localStorage.getItem(
+                CACHE_KEY
+            );
+
+        if(cached) {
+
+            try {
+
+                const parsed =
+                    JSON.parse(cached);
+
+                if(
+                    parsed &&
+                    parsed.version ===
+                    CACHE_VERSION &&
+                    Array.isArray(
+                        parsed.database
+                    ) &&
+                    parsed.database.length > 0
+                ) {
+
+                    updateLoading(
+                        100,
+                        "Loading cached database...",
+                        `${parsed.database.length.toLocaleString()} Pokémon`
+                    );
+
+                    await sleep(250);
+
+                    database =
+                        parsed.database;
+
+                    $("loadingScreen")
+                        .classList
+                        .add("hidden");
+
+                    loading = false;
+
+                    initializeFilters();
+
+                    updatePool();
+
+                    startRound();
+
+                    return;
+                }
+
+                localStorage.removeItem(
+                    CACHE_KEY
+                );
+
+            } catch(error) {
+
+                console.warn(
+                    "Invalid cache. Rebuilding.",
+                    error
+                );
+
+                localStorage.removeItem(
+                    CACHE_KEY
+                );
+            }
+        }
+
+        await loadDatabase();
+
+    } catch(error) {
+
+        console.error(
+            "DATABASE LOADING ERROR:",
+            error
+        );
+
+        loading = false;
+
+        $("loadingStage")
+            .textContent =
+            "Database loading failed.";
+
+        $("loadingCount")
+            .textContent =
+            error?.message ||
+            "Unknown error";
+
+        $("loadingPercent")
+            .textContent =
+            "ERROR";
+
+        $("poolText").innerHTML =
+            `<b>Database loading failed.</b><br>
+            ${error?.message || "Unknown error"}`;
+    }
+}
+
+function fillSelect(
+    id,
+    values
+) {
+
+    const select =
+        $(id);
+
+    const current =
+        select.value;
+
+    while(
+        select.options.length > 1
+    ) {
+
+        select.remove(1);
+    }
+
+    [...values]
+        .filter(Boolean)
+        .sort(
+            (a,b) =>
+                String(a)
+                    .localeCompare(
+                        String(b)
+                    )
+        )
+        .forEach(
+            value => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    value;
+
+                option.textContent =
+                    value;
+
+                select.appendChild(
+                    option
+                );
+            }
+        );
+
+    if(
+        [...select.options]
+            .some(
+                option =>
+                    option.value ===
+                    current
+            )
+    ) {
+
+        select.value =
+            current;
+    }
+}
+
+function initializeFilters() {
+
+    const types =
+        new Set();
+
+    const colors =
+        new Set();
+
+    const habitats =
+        new Set();
+
+    const growthRates =
+        new Set();
+
+    const eggGroups =
+        new Set();
+
+    const abilities =
+        new Set();
+
+    const hiddenAbilities =
+        new Set();
+
+    for(
+        const pokemon
+        of database
+    ) {
+
+        for(
+            const type
+            of pokemon.types || []
+        ) {
+
+            types.add(type);
+        }
+
+        if(
+            pokemon.color &&
+            pokemon.color !== "Unknown"
+        )
+            colors.add(
+                pokemon.color
+            );
+
+        if(
+            pokemon.habitat &&
+            pokemon.habitat !== "Unknown"
+        )
+            habitats.add(
+                pokemon.habitat
+            );
+
+        if(
+            pokemon.growthRate &&
+            pokemon.growthRate !==
+            "Unknown"
+        )
+            growthRates.add(
+                pokemon.growthRate
+            );
+
+        for(
+            const group
+            of pokemon.eggGroups || []
+        ) {
+
+            eggGroups.add(group);
+        }
+
+        for(
+            const ability
+            of pokemon.abilities || []
+        ) {
+
+            abilities.add(
+                ability
+            );
+        }
+
+        for(
+            const ability
+            of pokemon.hiddenAbilities || []
+        ) {
+
+            hiddenAbilities.add(
+                ability
+            );
+        }
+    }
+
+    fillSelect(
+        "type1",
+        types
+    );
+
+    fillSelect(
+        "color",
+        colors
+    );
+
+    fillSelect(
+        "habitat",
+        habitats
+    );
+
+    fillSelect(
+        "growthRate",
+        growthRates
+    );
+
+    fillSelect(
+        "eggGroup",
+        eggGroups
+    );
+
+    fillSelect(
+        "ability",
+        abilities
+    );
+
+    fillSelect(
+        "hiddenAbility",
+        hiddenAbilities
+    );
+}
+
+function numberFilter(
+    value,
+    minId,
+    maxId
+) {
+
+    const min =
+        parseFloat(
+            $(minId).value
+        );
+
+    const max =
+        parseFloat(
+            $(maxId).value
+        );
+
+    if(
+        !Number.isNaN(min) &&
+        value < min
+    )
+        return false;
+
+    if(
+        !Number.isNaN(max) &&
+        value > max
+    )
+        return false;
+
+    return true;
+}
+
+function matchesFilters(
+    pokemon
+) {
+
+    const generation =
+        $("generation").value;
+
+    if(
+        generation !== "all" &&
+        pokemon.generation !==
+        Number(generation)
+    )
+        return false;
+
+    const type1 =
+        $("type1").value;
+
+    if(
+        type1 !== "all" &&
+        pokemon.type1 !== type1
+    )
+        return false;
+
+    const type2 =
+        $("type2").value;
+
+    if(
+        type2 === "none" &&
+        pokemon.type2 !== null
+    )
+        return false;
+
+    if(
+        type2 !== "all" &&
+        type2 !== "none" &&
+        pokemon.type2 !== type2
+    )
+        return false;
+
+    const typing =
+        $("typing").value;
+
+    if(
+        typing === "mono" &&
+        pokemon.type2 !== null
+    )
+        return false;
+
+    if(
+        typing === "dual" &&
+        pokemon.type2 === null
+    )
+        return false;
+
+    const formType =
+        $("formType").value;
+
+    if(
+        formType !== "all" &&
+        pokemon.formType !== formType
+    )
+        return false;
+
+    const rarity =
+        $("rarity").value;
+
+    if(
+        rarity !== "all" &&
+        pokemon.rarity !== rarity
+    )
+        return false;
+
+    const evolution =
+        $("evolution").value;
+
+    if(
+        evolution === "baby" &&
+        !pokemon.evolution.baby
+    )
+        return false;
+
+    if(
+        evolution === "hasEvolution" &&
+        !pokemon.evolution.hasEvolution
+    )
+        return false;
+
+    if(
+        evolution === "middle" &&
+        !pokemon.evolution.middle
+    )
+        return false;
+
+    if(
+        evolution === "final" &&
+        !pokemon.evolution.final
+    )
+        return false;
+
+    if(
+        evolution === "none" &&
+        !pokemon.evolution.noEvolution
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.id,
+            "dexMin",
+            "dexMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.bst,
+            "bstMin",
+            "bstMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.hp,
+            "hpMin",
+            "hpMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.attack,
+            "attackMin",
+            "attackMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.defense,
+            "defenseMin",
+            "defenseMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.spAttack,
+            "spAttackMin",
+            "spAttackMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.spDefense,
+            "spDefenseMin",
+            "spDefenseMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.speed,
+            "speedMin",
+            "speedMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.height,
+            "heightMin",
+            "heightMax"
+        )
+    )
+        return false;
+
+    if(
+        !numberFilter(
+            pokemon.weight,
+            "weightMin",
+            "weightMax"
+        )
+    )
+        return false;
+
+    const color =
+        $("color").value;
+
+    if(
+        color !== "all" &&
+        pokemon.color !== color
+    )
+        return false;
+
+    const habitat =
+        $("habitat").value;
+
+    if(
+        habitat !== "all" &&
+        pokemon.habitat !== habitat
+    )
+        return false;
+
+    const growthRate =
+        $("growthRate").value;
+
+    if(
+        growthRate !== "all" &&
+        pokemon.growthRate !==
+        growthRate
+    )
+        return false;
+
+    const eggGroup =
+        $("eggGroup").value;
+
+    if(
+        eggGroup !== "all" &&
+        !pokemon.eggGroups.includes(
+            eggGroup
+        )
+    )
+        return false;
+
+    const ability =
+        $("ability").value;
+
+    if(
+        ability !== "all" &&
+        !pokemon.abilities.includes(
+            ability
+        )
+    )
+        return false;
+
+    const hiddenAbility =
+        $("hiddenAbility").value;
+
+    if(
+        hiddenAbility !== "all" &&
+        !pokemon.hiddenAbilities.includes(
+            hiddenAbility
+        )
+    )
+        return false;
+
+    return true;
+}
+
+
+function loadLearnWeights() {
+    try {
+        const saved = localStorage.getItem(WEIGHTS_KEY);
+        learnWeights = saved ? JSON.parse(saved) : {};
+        if(!learnWeights || typeof learnWeights !== "object")
+            learnWeights = {};
+    } catch(error) {
+        console.warn("Could not load Learn mode weights:", error);
+        learnWeights = {};
+    }
+}
+
+function saveLearnWeights() {
+    try {
+        localStorage.setItem(
+            WEIGHTS_KEY,
+            JSON.stringify(learnWeights)
+        );
+    } catch(error) {
+        console.warn("Could not save Learn mode weights:", error);
+    }
+}
+
+function getLearnWeight(pokemon) {
+    const key = String(pokemon.id);
+    const value = Number(learnWeights[key]);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+function recordLearnResult(pokemon, correct) {
+    if(!pokemon)
+        return;
+
+    const key = String(pokemon.id);
+    const current = getLearnWeight(pokemon);
+
+    // Correct answers make a Pokémon less likely to appear.
+    // Incorrect answers make it substantially more likely.
+    if(correct) {
+        learnWeights[key] = Math.max(1, current * 0.65);
+    } else {
+        learnWeights[key] = Math.min(100, current * 2.5);
+    }
+
+    saveLearnWeights();
+}
+
+function weightedRandomPokemon(items) {
+    if(!items.length)
+        return null;
+
+    let total = 0;
+
+    for(const pokemon of items)
+        total += getLearnWeight(pokemon);
+
+    let roll = Math.random() * total;
+
+    for(const pokemon of items) {
+        roll -= getLearnWeight(pokemon);
+        if(roll <= 0)
+            return pokemon;
+    }
+
+    return items[items.length - 1];
+}
+
+function getDefaultGenerationPool(generation) {
+    return database.filter(
+        pokemon =>
+            pokemon.isDefault === true &&
+            String(pokemon.generation) === String(generation)
+    );
+}
+
+function getLearnPool() {
+    const generation = $("learnGeneration").value;
+
+    return database.filter(
+        pokemon =>
+            pokemon.isDefault === true &&
+            (
+                generation === "all" ||
+                String(pokemon.generation) === generation
+            )
+    );
+}
+
+function clearNormalRoundUI() {
+    $("testPanel").classList.add("hidden");
+    $("testResult").classList.add("hidden");
+    $("testResult").innerHTML = "";
+    $("clues").innerHTML = "";
+    $("answer").classList.add("hidden");
+    $("answer").textContent = "";
+    $("hint").textContent = "";
+}
+
+function updatePool() {
+
+    if(currentMode === "learn") {
+        pool = getLearnPool();
+    } else {
+        pool = database.filter(matchesFilters);
+    }
+
+    $("poolText").innerHTML =
+        `<b>${pool.length.toLocaleString()} Pokémon available</b>`;
+
+    if(
+        target &&
+        !pool.some(
+            pokemon =>
+                pokemon.apiName ===
+                target.apiName
+        )
+    ) {
+        target = null;
+    }
+}
+
+function randomPokemon() {
+
+    if(pool.length === 0)
+        return null;
+
+    if(currentMode === "learn")
+        return weightedRandomPokemon(pool);
+
+    return pool[
+        Math.floor(
+            Math.random() *
+            pool.length
+        )
+    ];
+}
+
+function startRound() {
+
+    if(loading)
+        return;
+
+    if(currentMode === "test") {
+        return;
+    }
+
+    updatePool();
+
+    if(pool.length === 0) {
+        $("status").textContent =
+            "No Pokémon available for this mode.";
+
+        $("guessInput").disabled = true;
+        $("guessButton").disabled = true;
+        $("hintButton").disabled = true;
+        $("giveUpButton").disabled = true;
+        $("nextButton").disabled = true;
+        return;
+    }
+
+    target = randomPokemon();
+    solved = false;
+    revealed = new Set();
+
+    stats.rounds++;
+
+    $("roundText").textContent =
+        `Round ${stats.rounds}`;
+
+    $("guessInput").disabled = false;
+    $("guessButton").disabled = false;
+    $("hintButton").disabled = currentMode === "learn";
+    $("giveUpButton").disabled = false;
+    $("nextButton").disabled = true;
+
+    $("answer").classList.add("hidden");
+    $("answer").textContent = "";
+    $("hint").textContent = "";
+    $("guessInput").value = "";
+
+    $("status").textContent =
+        currentMode === "learn"
+            ? "What Pokémon is this?"
+            : "Make your guess.";
+
+    clearNormalRoundUI();
+    renderRound();
+
+    $("guessInput").focus();
+}
+
+
+const clueDefinitions = [
+    ["dex", "National Dex", () => "#" + target.id],
+    ["generation", "Generation", () => "Generation " + target.generation],
+    ["type1", "Type 1", () => target.type1],
+    ["type2", "Type 2", () => target.type2 || "None"],
+    ["typing", "Typing", () => target.type2 ? "Dual Type" : "Monotype"],
+    ["bst", "BST", () => target.bst],
+    ["hp", "HP", () => target.hp],
+    ["attack", "Attack", () => target.attack],
+    ["defense", "Defense", () => target.defense],
+    ["spAttack", "Sp. Attack", () => target.spAttack],
+    ["spDefense", "Sp. Defense", () => target.spDefense],
+    ["speed", "Speed", () => target.speed],
+    ["height", "Height", () => (target.height / 10).toFixed(1) + " m"],
+    ["weight", "Weight", () => (target.weight / 10).toFixed(1) + " kg"],
+    ["color", "Color", () => target.color],
+    ["habitat", "Habitat", () => target.habitat],
+    ["growthRate", "Growth Rate", () => target.growthRate],
+    ["rarity", "Rarity", () => prettify(target.rarity)],
+    ["form", "Form", () => prettify(target.formType)],
+    ["eggGroups", "Egg Groups", () => target.eggGroups.join(", ") || "None"]
+];
+
+function getEnabledClueDefinitions() {
+    return clueDefinitions.filter(
+        ([id]) => {
+            const checkbox = document.querySelector(
+                `.clue-toggle[value="${id}"]`
+            );
+            return checkbox ? checkbox.checked : true;
+        }
+    );
+}
+
+function ensureAtLeastOneClue() {
+    const toggles = [
+        ...document.querySelectorAll(".clue-toggle")
+    ];
+
+    if(
+        toggles.length > 0 &&
+        !toggles.some(toggle => toggle.checked)
+    ) {
+        toggles[0].checked = true;
+    }
+}
+
+function renderRound() {
+
+    if(!target)
+        return;
+
+    $("clues").innerHTML = "";
+
+    if(currentMode === "learn") {
+
+        $("visual").innerHTML = `
+            <img
+                class="pokemon-image"
+                src="${target.image}"
+                alt="Mystery Pokémon">
+        `;
+
+        $("gameSubtitle").textContent =
+            "Learn mode — identify the Pokémon from its image.";
+
+        return;
+    }
+
+    const imageMode =
+        currentMode === "image";
+
+    if(imageMode) {
+
+        $("visual").innerHTML = `
+            <img
+                class="pokemon-image"
+                src="${target.image}"
+                alt="Mystery Pokémon">
+        `;
+
+        $("gameSubtitle").textContent =
+            "Identify the Pokémon from its image.";
+
+        return;
+    }
+
+    $("visual").innerHTML =
+        `<div class="image-placeholder">?</div>`;
+
+    $("gameSubtitle").textContent =
+        "Identify the Pokémon from the clues.";
+
+    const clues =
+        getEnabledClueDefinitions()
+            .map(
+                ([id, name, getValue]) => [
+                    id,
+                    name,
+                    getValue()
+                ]
+            );
+
+    clues
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 9)
+        .forEach(
+            ([id,name,value]) => {
+
+                const div =
+                    document.createElement("div");
+
+                div.className = "clue";
+
+                div.innerHTML = `
+                    <div class="clue-name">
+                        ${name}
+                    </div>
+
+                    <div class="clue-value">
+                        ${value}
+                    </div>
+                `;
+
+                $("clues").appendChild(div);
+            }
+        );
+}
+
+
+function getHintString() {
+
+    if(!target)
+        return "";
+
+    return Array.from(
+        target.displayName
+    )
+    .map(
+        (char,index) => {
+
+            if(char === " ")
+                return "&nbsp;";
+
+            if(
+                char === "-" ||
+                char === "'"
+            )
+                return char;
+
+            if(
+                revealed.has(index)
+            )
+                return char.toUpperCase();
+
+            return "*";
+
+        }
+    )
+    .join("");
+}
+
+function useHint() {
+
+    if(
+        !target ||
+        solved
+    )
+        return;
+
+    const possible = [];
+
+    for(
+        let i = 0;
+        i <
+        target.displayName.length;
+        i++
+    ) {
+
+        const char =
+            target.displayName[i];
+
+        if(
+            !revealed.has(i) &&
+            /[a-zA-Z0-9]/.test(
+                char
+            )
+        ) {
+
+            possible.push(i);
+        }
+    }
+
+    if(
+        possible.length === 0
+    )
+        return;
+
+    const index =
+        possible[
+            Math.floor(
+                Math.random() *
+                possible.length
+            )
+        ];
+
+    revealed.add(index);
+
+    stats.hints++;
+
+    $("hint").innerHTML =
+        getHintString();
+
+    updateStats();
+}
+
+function checkGuess() {
+
+    if(!target)
+        return;
+
+    const guess =
+        $("guessInput").value.trim();
+
+    if(!guess)
+        return;
+
+    if(currentMode === "test") {
+        handleTestGuess(guess);
+        return;
+    }
+
+    if(solved)
+        return;
+
+    stats.guesses++;
+
+    const correct =
+        normalizeName(guess) ===
+        normalizeName(target.displayName);
+
+    if(currentMode === "learn") {
+        recordLearnResult(target, correct);
+    }
+
+    if(correct) {
+        correctAnswer();
+    } else {
+        incorrectAnswer();
+    }
+}
+
+
+function correctAnswer() {
+
+    solved = true;
+
+    stats.correct++;
+    stats.streak++;
+
+    if(stats.streak > stats.bestStreak)
+        stats.bestStreak = stats.streak;
+
+    $("status").textContent =
+        currentMode === "learn"
+            ? "Correct!"
+            : "Correct!";
+
+    $("answer").textContent =
+        target.displayName;
+
+    $("answer").classList.remove("hidden");
+
+    $("visual").innerHTML = `
+        <img
+            class="pokemon-image"
+            src="${target.image}"
+            alt="${target.displayName}">
+    `;
+
+    $("guessInput").disabled = true;
+    $("guessButton").disabled = true;
+    $("hintButton").disabled = true;
+    $("giveUpButton").disabled = true;
+    $("nextButton").disabled = false;
+
+    updateStats();
+
+    if($("autoNext").checked) {
+        setTimeout(
+            () => {
+                if(solved && currentMode !== "test")
+                    startRound();
+            },
+            1000
+        );
+    }
+}
+
+function incorrectAnswer() {
+
+    stats.incorrect++;
+    stats.streak = 0;
+
+    $("status").textContent =
+        "Incorrect.";
+
+    $("guessInput").select();
+
+    updateStats();
+}
+
+function giveUp() {
+
+    if(!target || solved)
+        return;
+
+    if(currentMode === "test") {
+        handleTestGuess("");
+        return;
+    }
+
+    solved = true;
+    stats.incorrect++;
+    stats.streak = 0;
+
+    if(currentMode === "learn")
+        recordLearnResult(target, false);
+
+    $("status").textContent =
+        "The answer was:";
+
+    $("answer").textContent =
+        target.displayName;
+
+    $("answer").classList.remove("hidden");
+
+    $("visual").innerHTML = `
+        <img
+            class="pokemon-image"
+            src="${target.image}"
+            alt="${target.displayName}">
+    `;
+
+    $("guessInput").disabled = true;
+    $("guessButton").disabled = true;
+    $("hintButton").disabled = true;
+    $("giveUpButton").disabled = true;
+    $("nextButton").disabled = false;
+
+    updateStats();
+
+    if($("autoNext").checked) {
+        setTimeout(
+            () => {
+                if(solved && currentMode !== "test")
+                    startRound();
+            },
+            1000
+        );
+    }
+}
+
+
+function updateStats() {
+
+    $("statCorrect")
+        .textContent =
+        stats.correct;
+
+    $("statIncorrect")
+        .textContent =
+        stats.incorrect;
+
+    $("statStreak")
+        .textContent =
+        stats.streak;
+
+    $("statBest")
+        .textContent =
+        stats.bestStreak;
+
+    $("statHints")
+        .textContent =
+        stats.hints;
+
+    const total =
+        stats.correct +
+        stats.incorrect;
+
+    $("statAccuracy")
+        .textContent =
+        total === 0
+            ? "0%"
+            : Math.round(
+                (
+                    stats.correct /
+                    total
+                ) * 100
+            ) + "%";
+}
+
+function startTest() {
+
+    if(loading)
+        return;
+
+    const generation = $("testGeneration").value;
+    const testPool = getDefaultGenerationPool(generation);
+
+    if(testPool.length === 0) {
+        $("status").textContent =
+            "No default-form Pokémon found for that generation.";
+        return;
+    }
+
+    currentMode = "test";
+
+    document
+        .querySelector(".sidebar")
+        .classList
+        .remove("learn-active");
+
+    $("learnGenerationSection").classList.add("hidden");
+
+    document
+        .querySelectorAll(".mode-button")
+        .forEach(button => button.classList.remove("active"));
+
+    $("gameSubtitle").textContent =
+        `Generation ${generation} Test`;
+
+    $("testPanel").classList.remove("hidden");
+    $("testTitle").textContent =
+        `Generation ${generation} Test`;
+
+    testState = {
+        generation,
+        questions: [...testPool].sort(() => Math.random() - 0.5),
+        index: 0,
+        correct: 0,
+        incorrect: 0,
+        unanswered: 0
+    };
+
+    $("testResult").classList.add("hidden");
+    $("testResult").innerHTML = "";
+
+    showNextTestQuestion();
+}
+
+function showNextTestQuestion() {
+
+    if(!testState)
+        return;
+
+    if(testState.index >= testState.questions.length) {
+        finishTest();
+        return;
+    }
+
+    target = testState.questions[testState.index];
+    solved = false;
+    revealed = new Set();
+
+    $("testProgress").textContent =
+        `Question ${testState.index + 1} of ${testState.questions.length}`;
+
+    $("status").textContent =
+        "Enter your answer.";
+
+    $("visual").innerHTML = `
+        <img
+            class="pokemon-image"
+            src="${target.image}"
+            alt="Mystery Pokémon">
+    `;
+
+    $("clues").innerHTML = "";
+    $("answer").classList.add("hidden");
+    $("answer").textContent = "";
+    $("hint").textContent = "";
+
+    $("guessInput").value = "";
+    $("guessInput").disabled = false;
+    $("guessButton").disabled = false;
+    $("hintButton").disabled = true;
+    $("giveUpButton").disabled = false;
+    $("nextButton").disabled = true;
+
+    $("gameSubtitle").textContent =
+        "Test mode — no results are shown until the test is finished.";
+
+    $("guessInput").focus();
+}
+
+function handleTestGuess(guess) {
+
+    if(!testState || !target)
+        return;
+
+    const correct =
+        guess &&
+        normalizeName(guess) ===
+        normalizeName(target.displayName);
+
+    if(correct)
+        testState.correct++;
+    else if(guess)
+        testState.incorrect++;
+    else
+        testState.unanswered++;
+
+    // Deliberately reveal NOTHING here.
+    testState.index++;
+
+    setTimeout(showNextTestQuestion, 100);
+}
+
+function finishTest() {
+
+    const total =
+        testState.correct +
+        testState.incorrect +
+        testState.unanswered;
+
+    const accuracy =
+        total === 0
+            ? 0
+            : Math.round(
+                (testState.correct / total) * 100
+            );
+
+    $("testProgress").textContent =
+        `${total} Pokémon tested`;
+
+    $("status").textContent =
+        "Test complete.";
+
+    $("visual").innerHTML = "";
+    $("clues").innerHTML = "";
+
+    $("guessInput").disabled = true;
+    $("guessButton").disabled = true;
+    $("hintButton").disabled = true;
+    $("giveUpButton").disabled = true;
+    $("nextButton").disabled = false;
+
+    $("testResult").innerHTML = `
+        <h3>Generation ${testState.generation} Results</h3>
+        <div>Correct: <b>${testState.correct}</b></div>
+        <div>Incorrect: <b>${testState.incorrect}</b></div>
+        <div>Unanswered: <b>${testState.unanswered}</b></div>
+        <div>Accuracy: <b>${accuracy}%</b></div>
+    `;
+
+    $("testResult").classList.remove("hidden");
+    $("answer").classList.add("hidden");
+
+    testState = null;
+}
+
+function resetFilters() {
+
+    currentMode = "clues";
+    testState = null;
+
+    document
+        .querySelector(".sidebar")
+        .classList
+        .remove("learn-active");
+
+    [
+        "generation",
+        "type1",
+        "type2",
+        "typing",
+        "formType",
+        "rarity",
+        "evolution",
+        "color",
+        "habitat",
+        "growthRate",
+        "eggGroup",
+        "ability",
+        "hiddenAbility"
+    ]
+    .forEach(
+        id => $(id).value = "all"
+    );
+
+    [
+        "dexMin",
+        "dexMax",
+        "bstMin",
+        "bstMax",
+        "hpMin",
+        "hpMax",
+        "attackMin",
+        "attackMax",
+        "defenseMin",
+        "defenseMax",
+        "spAttackMin",
+        "spAttackMax",
+        "spDefenseMin",
+        "spDefenseMax",
+        "speedMin",
+        "speedMax",
+        "heightMin",
+        "heightMax",
+        "weightMin",
+        "weightMax"
+    ]
+    .forEach(
+        id => $(id).value = ""
+    );
+
+    $("learnGenerationSection").classList.add("hidden");
+
+    document
+        .querySelectorAll(".mode-button")
+        .forEach(button => button.classList.remove("active"));
+
+    $("cluesMode").classList.add("active");
+
+    updatePool();
+    startRound();
+}
+
+function setMode(mode) {
+
+    currentMode = mode;
+    testState = null;
+
+    document
+        .querySelectorAll(".mode-button")
+        .forEach(button => button.classList.remove("active"));
+
+    if(mode === "clues")
+        $("cluesMode").classList.add("active");
+
+    if(mode === "image")
+        $("imageMode").classList.add("active");
+
+    if(mode === "learn")
+        $("learnMode").classList.add("active");
+
+    $("learnGenerationSection")
+        .classList
+        .toggle("hidden", mode !== "learn");
+
+    document
+        .querySelector(".sidebar")
+        .classList
+        .toggle("learn-active", mode === "learn");
+
+    $("testPanel").classList.add("hidden");
+    $("testResult").classList.add("hidden");
+
+    updatePool();
+
+    if(pool.length > 0)
+        startRound();
+    else
+        $("status").textContent =
+            "No Pokémon available for this mode.";
+}
+
+
+document
+    .querySelectorAll(
+        "#generation, #type1, #type2, #typing, #formType, #rarity, #evolution, #color, #habitat, #growthRate, #eggGroup, #ability, #hiddenAbility, input[type=number]"
+    )
+    .forEach(
+        element => {
+
+            element.addEventListener(
+                "input",
+                () => {
+                    if(!loading && currentMode !== "test")
+                        updatePool();
+                }
+            );
+
+            element.addEventListener(
+                "change",
+                () => {
+                    if(!loading && currentMode !== "test") {
+                        updatePool();
+
+                        if(pool.length > 0)
+                            startRound();
+                        else
+                            $("status").textContent =
+                                "No Pokémon match your filters.";
+                    }
+                }
+            );
+        }
+    );
+
+$("learnGeneration")
+    .addEventListener(
+        "change",
+        () => {
+            if(currentMode === "learn") {
+                updatePool();
+                startRound();
+            }
+        }
+    );
+
+$("cluesMode")
+    .addEventListener(
+        "click",
+        () => setMode("clues")
+    );
+
+$("imageMode")
+    .addEventListener(
+        "click",
+        () => setMode("image")
+    );
+
+$("learnMode")
+    .addEventListener(
+        "click",
+        () => setMode("learn")
+    );
+
+$("startTestButton")
+    .addEventListener(
+        "click",
+        startTest
+    );
+
+
+$("cluesMode")
+    .addEventListener(
+        "click",
+        () =>
+            setMode("clues")
+    );
+
+$("imageMode")
+    .addEventListener(
+        "click",
+        () =>
+            setMode("image")
+    );
+
+$("guessButton")
+    .addEventListener(
+        "click",
+        checkGuess
+    );
+
+$("guessInput")
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if(
+                event.key === "Enter"
+            ) {
+
+                checkGuess();
+            }
+        }
+    );
+
+$("hintButton")
+    .addEventListener(
+        "click",
+        useHint
+    );
+
+$("giveUpButton")
+    .addEventListener(
+        "click",
+        giveUp
+    );
+
+$("nextButton")
+    .addEventListener(
+        "click",
+        startRound
+    );
+
+$("resetFilters")
+    .addEventListener(
+        "click",
+        resetFilters
+    );
+
+document
+    .querySelectorAll(".clue-toggle")
+    .forEach(
+        toggle => {
+            toggle.addEventListener(
+                "change",
+                () => {
+                    ensureAtLeastOneClue();
+                    renderRound();
+                }
+            );
+        }
+    );
+
+$("enableAllClues")
+    .addEventListener(
+        "click",
+        () => {
+            document
+                .querySelectorAll(".clue-toggle")
+                .forEach(
+                    toggle => toggle.checked = true
+                );
+
+            renderRound();
+        }
+    );
+
+$("disableAllClues")
+    .addEventListener(
+        "click",
+        () => {
+            document
+                .querySelectorAll(".clue-toggle")
+                .forEach(
+                    toggle => toggle.checked = false
+                );
+
+            ensureAtLeastOneClue();
+            renderRound();
+        }
+    );
+
+loadLearnWeights();
+updateStats();
+
+initializeDatabase();
+
+</script>
+
+</body>
+</html>
