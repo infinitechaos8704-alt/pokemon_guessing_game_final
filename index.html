@@ -3320,7 +3320,8 @@ function startRound() {
     $("guessButton").disabled = false;
     $("hintButton").disabled = currentMode === "learn";
     $("giveUpButton").disabled = false;
-    $("nextButton").disabled = true;
+    // New Pokémon is always available outside of tests.
+    $("nextButton").disabled = false;
 
     $("answer").classList.add("hidden");
     $("answer").textContent = "";
@@ -3494,7 +3495,7 @@ function getHintString() {
             )
                 return char.toUpperCase();
 
-            return "*";
+            return "_";
 
         }
     )
@@ -3505,7 +3506,8 @@ function useHint() {
 
     if(
         !target ||
-        solved
+        solved ||
+        currentMode === "test"
     )
         return;
 
@@ -3523,29 +3525,36 @@ function useHint() {
 
         if(
             !revealed.has(i) &&
-            /[a-zA-Z0-9]/.test(
-                char
-            )
+            /[a-zA-Z0-9]/.test(char)
         ) {
-
             possible.push(i);
         }
     }
 
-    if(
-        possible.length === 0
-    )
+    if(possible.length === 0)
         return;
 
-    const index =
-        possible[
-            Math.floor(
-                Math.random() *
-                possible.length
-            )
-        ];
+    // Reveal roughly 20–35% of the remaining letters/numbers.
+    const revealPercent =
+        0.20 + Math.random() * 0.15;
 
-    revealed.add(index);
+    const revealCount = Math.min(
+        possible.length,
+        Math.max(1, Math.ceil(possible.length * revealPercent))
+    );
+
+    // Shuffle the available character positions and take the required amount.
+    for(
+        let i = possible.length - 1;
+        i > 0;
+        i--
+    ) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [possible[i], possible[j]] = [possible[j], possible[i]];
+    }
+
+    for(let i = 0; i < revealCount; i++)
+        revealed.add(possible[i]);
 
     stats.hints++;
 
@@ -3885,7 +3894,8 @@ function finishTest() {
     $("guessButton").disabled = true;
     $("hintButton").disabled = true;
     $("giveUpButton").disabled = true;
-    $("nextButton").disabled = false;
+    // The New Pokémon button stays disabled until the player leaves test mode.
+    $("nextButton").disabled = true;
 
     $("testResult").innerHTML = `
         <h3>Generation ${testState.generation} Results</h3>
